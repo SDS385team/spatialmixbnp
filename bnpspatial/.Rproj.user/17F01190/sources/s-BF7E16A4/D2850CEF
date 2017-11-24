@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1511122839981.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "D2850CEF",
+    "lastKnownWriteTime" : 1511384367,
+    "last_content_update" : 1511384367388,
+    "path" : "D:/Github/bnpspatial/bnpspatial/src/dirichlet_process.cpp",
+    "project_path" : "src/dirichlet_process.cpp",
+    "properties" : {
+        "cursorPosition" : "22,19",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 2,
+    "source_on_save" : true,
+    "source_window" : "",
+    "type" : "cpp"
+}
