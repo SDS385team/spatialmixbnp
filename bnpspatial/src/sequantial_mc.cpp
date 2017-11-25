@@ -67,7 +67,6 @@ List dp_gaussian_mixture(
     const arma::mat& y,
     const double alpha,
     const arma::vec& lambda,
-    const arma::mat& Sigma,
     const double kappa,
     const double nu,
     const arma::mat& Omega
@@ -101,7 +100,7 @@ List dp_gaussian_mixture(
     
     for (uword i = 0; i < mt; i++) {
       // Cluster probabilities
-      vec atj = kappa * lambda + ntj[i] * meantj.col(i) / (kappa + ntj[i]);
+      vec atj = (kappa * lambda + ntj[i] * meantj.col(i)) / (kappa + ntj[i]);
       mat Dtj = Stj.slice(i) + kappa * ntj[i] / 
         (kappa + ntj[i]) * (lambda - meantj.col(i)) * (lambda - meantj.col(i)).t();
       double ctj = 2 * nu + ntj[i] - d + 1.0;
@@ -116,7 +115,7 @@ List dp_gaussian_mixture(
     // Update values
     kt = sample_int(dpredictive);
     // Rcout << "dpredictive\n" << dpredictive << "kt: " << kt << "\nmt: " << mt << "\nntjkt: " << ntj[kt] << endl;
-    (kt == mt) && mt++;
+    kt == mt && mt++;
     ntj[kt] += 1;
     vec meantjt = meantj.col(kt);
     meantj.col(kt) =  ((ntj[kt] - 1) * meantj.col(kt) + ynew) / ntj[kt];

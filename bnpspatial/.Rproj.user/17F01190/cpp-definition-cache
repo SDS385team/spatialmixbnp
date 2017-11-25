@@ -68,16 +68,43 @@
     {
         "definitions" : [
             {
+                "column" : 18,
+                "file" : "D:/Github/bnpspatial/bnpspatial/src/sequantial_mc.cpp",
+                "kind" : 6,
+                "line" : 25,
+                "name" : "rSt(const arma::vec &, const arma::mat &, const double)",
+                "parent_name" : "",
+                "usr" : "c:@F@rSt#&1$@N@arma@C@Col>#d#&1$@N@arma@C@Mat>#d#1d#"
+            },
+            {
                 "column" : 15,
                 "file" : "D:/Github/bnpspatial/bnpspatial/src/sequantial_mc.cpp",
                 "kind" : 6,
-                "line" : 6,
-                "name" : "dp_gaussian_mixture(const NumericVector &, const double, const NumericVector &, const NumericMatrix &, const double, const double, const NumericMatrix &)",
+                "line" : 38,
+                "name" : "dSt(const arma::vec &, const arma::vec &, const arma::mat &, const double)",
                 "parent_name" : "",
-                "usr" : "c:@F@dp_gaussian_mixture#&1$@N@Rcpp@C@Vector>#VI14#@N@Rcpp@CT>1#T@PreserveStorage#1d#S0_#&1$@N@Rcpp@C@Matrix>#VI14#@N@Rcpp@CT>1#T@PreserveStorage#1d#1d#S2_#"
+                "usr" : "c:@F@dSt#&1$@N@arma@C@Col>#d#S0_#&1$@N@arma@C@Mat>#d#1d#"
+            },
+            {
+                "column" : 12,
+                "file" : "D:/Github/bnpspatial/bnpspatial/src/sequantial_mc.cpp",
+                "kind" : 6,
+                "line" : 57,
+                "name" : "sample_int(vec)",
+                "parent_name" : "",
+                "usr" : "c:@F@sample_int#$@N@arma@C@Col>#d#"
+            },
+            {
+                "column" : 6,
+                "file" : "D:/Github/bnpspatial/bnpspatial/src/sequantial_mc.cpp",
+                "kind" : 6,
+                "line" : 66,
+                "name" : "dp_gaussian_mixture(const arma::mat &, const double, const arma::vec &, const double, const double, const arma::mat &)",
+                "parent_name" : "",
+                "usr" : "c:@F@dp_gaussian_mixture#&1$@N@arma@C@Mat>#d#1d#&1$@N@arma@C@Col>#d#1d#1d#S0_#"
             }
         ],
         "file" : "D:/Github/bnpspatial/bnpspatial/src/sequantial_mc.cpp",
-        "file_last_write" : 1511410145
+        "file_last_write" : 1511602240
     }
 ]
