@@ -2,6 +2,7 @@
 #define _USE_MATH_DEFINES
 #include <omp.h>
 #include <RcppArmadillo.h>
+#include <RcppArmadilloExtensions/sample.h>
 #include <cmath>
 #include <thread>
 using namespace Rcpp;
@@ -51,9 +52,18 @@ inline double dSt(
   return exp(extterm + innerterm);
 }
 
+// [[Rcpp::export]]
+// samples an integer 0,...,n-1
+inline int sample_int(vec prob) {
+  vec probsum = cumsum(prob) / sum(prob);
+  double u = unif_rand();
+  int i;
+  for (i = 0; u > probsum[i]; i++) {}
+  return i;
+}
 
 // [[Rcpp::export]]
-int dp_gaussian_mixture(
+List dp_gaussian_mixture(
     const arma::mat& y,
     const double alpha,
     const arma::vec& lambda,
@@ -64,49 +74,64 @@ int dp_gaussian_mixture(
     ) {
   
   // Dimensions of the problem
-  int T = y.n_rows;
-  int d = y.n_cols;
+  uword T = y.n_rows;
+  uword d = y.n_cols;
   
-  // Initialization of essential state particles
-  uvec kt(T); // Allocation of observation at time t
-  kt[0] = 0;
-  int mt = 1; // Number of total components at time t, no need to store
-  NumericVector ntj(T);
-  ntj[0] = 1; // Counts of observations per component, T is the max number of clusters
-  mat mutj(d, T); // Means per component
-  mutj.col(0) = y.row(0).t();
-  cube Stj(d, d, T); // Sum of squares per component
-  Stj.slice(0) = mat(2, 2, fill::zeros);
-  // Rcout << "kt: " << kt << endl << "mt: " << mt << endl << "ntj:" << ntj[0] <<
-  //   endl << "mutj: " << mutj << endl << "ssj: " << ssj << endl;
+  // Initialization of essential state particles: no storage of past, T max number of clusters
+  uword kt = 0; // Allocation at time t
+  uword mt = 1; // Total components at time t,
+  uvec ntj(T, fill::zeros);
+  ntj[0] = 1; // Count per cluster
+  mat meantj(d, T, fill::zeros); // Cluster mean
+  meantj.col(0) = y.row(0).t();
+  cube Stj(d, d, T, fill::zeros); // Cluster variance
   
   // Prior sampling constants
   double c0 = 2 * nu - d + 1.0;
   const mat& B0 = 2 * (kappa + 1) / kappa / c0 * Omega;
-  // Rcout << c0 << endl << B0 << endl;
   
   // Main Loop
-  for (int t = 1; t < T; t++) {
+  for (uword t = 1; t < T; t++) {
     //
-    // Get new data
-    vec yt1 = y.row(t).t();
+    // New data point
+    vec ynew = y.row(t).t();
     
-    // Random number
-    double u = unif_rand();
-    
-    // Probabilities of cluster
+    // New cluster density
     vec dpredictive(mt + 1);
-    dpredictive[0] =  alpha / (alpha + t) * dSt(y.row(1).t(), lambda, B0, c0);
-    for (int i = 0; i < mt; i++) {
-      vec atj = kappa * lambda + ntj[i] * mutj[i] / (kappa + ntj[i]);
-      mat Dtj = ;
-      double ctj = ;
-      mat Btj = 2.0 * (kappa + ntj[i] + 1.0) / (kappa + ntj[0]) / ctj * (Omega  + 0.5 Dtj);
-      dpredictive[i + 1] =  ntj[i] / (alpha + t) * dSt(y.row(1).t(), lambda, B0, c0);
+    
+    for (uword i = 0; i < mt; i++) {
+      // Cluster probabilities
+      vec atj = kappa * lambda + ntj[i] * meantj.col(i) / (kappa + ntj[i]);
+      mat Dtj = Stj.slice(i) + kappa * ntj[i] / 
+        (kappa + ntj[i]) * (lambda - meantj.col(i)) * (lambda - meantj.col(i)).t();
+      double ctj = 2 * nu + ntj[i] - d + 1.0;
+      mat Btj = 2.0 * (kappa + ntj[i] + 1.0) / (kappa + ntj[i]) / ctj * (Omega  + 0.5 * Dtj);
+      // Rcout << "ynew" << ynew << "\nntj" << ntj[i] << "\nBtj" << Btj << "\nDtj" << Dtj << "\natj " << atj << "\nctj" << ctj << endl;
+      dpredictive[i] =  ntj[i] / (alpha + t) * dSt(ynew, atj, Btj, ctj);
     }
-
-
+    
+    // Prior probability
+    dpredictive[mt] =  alpha / (alpha + t) * dSt(ynew, lambda, B0, c0);
+    
+    // Update values
+    kt = sample_int(dpredictive);
+    // Rcout << "dpredictive\n" << dpredictive << "kt: " << kt << "\nmt: " << mt << "\nntjkt: " << ntj[kt] << endl;
+    (kt == mt) && mt++;
+    ntj[kt] += 1;
+    vec meantjt = meantj.col(kt);
+    meantj.col(kt) =  ((ntj[kt] - 1) * meantj.col(kt) + ynew) / ntj[kt];
+    Stj.slice(kt) += ynew * ynew.t() + 
+      (ntj[kt] - 1) * meantjt * meantjt.t() - ntj[kt] * meantj.col(kt) * meantj.col(kt).t();
   }
-  return T;
+  
+  // Output List
+  ntj.resize(mt);
+  meantj.resize(d, mt);
+  Stj.resize(d, d, mt);
+  return Rcpp::List::create(
+    Named("m") = mt,
+    Named("nj") = ntj,
+    Named("meanj") = meantj,
+    Named("Sj") = Stj);
 }
 
